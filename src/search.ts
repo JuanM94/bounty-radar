@@ -94,6 +94,23 @@ function parseIssue(item: any, platform: string): Bounty {
   };
 }
 
+function extractIssueHuntAmount(body = ''): string {
+  const patterns = [
+    /Backers\s*\(Total:\s*(\$[\d,.]+k?)\)/i,
+    /There is a\s+(\$[\d,.]+k?)\s+open bounty/i,
+    /IssueHunt-[^-]*?%24([\d,.]+k?)%20Funded/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = body.match(pattern);
+    if (match) {
+      return match[1].startsWith('$') ? match[1] : `$${match[1]}`;
+    }
+  }
+
+  return 'Unknown';
+}
+
 export async function searchAlgoraBounties(options: { language?: string; minAmount?: number }): Promise<Bounty[]> {
   const langFilter = options.language ? `+language:${options.language}` : '';
   const query = `label:"💎 Bounty" state:open${langFilter}`;
@@ -171,11 +188,13 @@ export async function searchIssueHuntBounties(options: { language?: string; minA
         if (seen.has(key)) continue;
         seen.add(key);
 
-        const bounty = parseIssue(item, 'issuehunt');
-        const amount = parseAmount(bounty.amount);
+        const fundedAmount = extractIssueHuntAmount(item.body);
+        const amount = parseAmount(fundedAmount);
         if (amount <= 0) continue;
         if (options.minAmount && amount < options.minAmount) continue;
 
+        const bounty = parseIssue(item, 'issuehunt');
+        bounty.amount = fundedAmount;
         allBounties.push(bounty);
       }
     } catch {
