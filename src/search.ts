@@ -1,5 +1,7 @@
 import https from 'https';
 
+const MAX_GITHUB_SEARCH_RETRIES = 2;
+
 export interface Bounty {
   repo: string;
   issue: number;
@@ -12,23 +14,47 @@ export interface Bounty {
   platform: string;
 }
 
-function githubSearch(query: string): Promise<any> {
+function githubSearch(query: string, attempt = 0): Promise<any> {
   return new Promise((resolve, reject) => {
     const url = `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&per_page=50&sort=created&order=desc`;
+    const headers: Record<string, string> = {
+      'User-Agent': 'bounty-radar/1.0',
+      'Accept': 'application/vnd.github.v3+json'
+    };
+
+    if (process.env.GITHUB_TOKEN) {
+      headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
     const req = https.get(url, {
-      headers: {
-        'User-Agent': 'bounty-radar/1.0',
-        'Accept': 'application/vnd.github.v3+json'
-      }
+      headers
     }, (res) => {
       let data = '';
       res.on('data', (chunk: string) => data += chunk);
       res.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch (e) { reject(new Error('Failed to parse GitHub response')); }
+        try {
+          const parsed = JSON.parse(data);
+          if (res.statusCode && res.statusCode >= 400) {
+            reject(new Error(parsed.message || `GitHub search failed with status ${res.statusCode}`));
+            return;
+          }
+          resolve(parsed);
+        }
+        catch {
+          reject(new Error('Failed to parse GitHub response'));
+        }
       });
     });
-    req.on('error', reject);
+    req.on('error', (error) => {
+      if (attempt < MAX_GITHUB_SEARCH_RETRIES) {
+        setTimeout(() => {
+          githubSearch(query, attempt + 1).then(resolve, reject);
+        }, 250 * (attempt + 1));
+        return;
+      }
+
+      reject(error);
+    });
   });
 }
 
