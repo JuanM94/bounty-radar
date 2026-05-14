@@ -23,7 +23,7 @@ bounty-radar --lang typescript --min 100
 bounty-radar --json | jq '.[] | select(.amount | test("\\$[0-9]00"))'
 
 # Use an optional GitHub token for higher search rate limits
-GITHUB_TOKEN=ghp_your_token bounty-radar --min 50
+GITHUB_TOKEN=your_token bounty-radar --min 50
 
 # Show all bounties
 bounty-radar
