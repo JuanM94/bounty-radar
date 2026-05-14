@@ -42,7 +42,9 @@ async function main() {
   const maxComments = getArg('--max-comments') ? parseInt(getArg('--max-comments')!) : undefined;
   const jsonOutput = args.includes('--json');
 
-  console.log('🔍 Scanning GitHub for bounties...\n');
+  if (!jsonOutput) {
+    console.log('🔍 Scanning GitHub for bounties...\n');
+  }
 
   try {
     const bounties = await searchAll({ language, minAmount, maxComments });
