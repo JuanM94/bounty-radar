@@ -233,7 +233,7 @@ export async function searchAll(options: { language?: string; minAmount?: number
 }
 
 function parseAmount(amount: string): number {
-  const cleaned = amount.replace(/[$,]/g, '');
+  const cleaned = amount.replace(/[$,]/g, '').toLowerCase();
   if (cleaned.endsWith('k')) return parseFloat(cleaned) * 1000;
   const num = parseFloat(cleaned);
   return isNaN(num) ? 0 : num;
