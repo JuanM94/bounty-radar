@@ -96,8 +96,8 @@ function parseIssue(item: any, platform: string): Bounty {
 
 function extractIssueHuntAmount(body = ''): string {
   const patterns = [
-    /Backers\s*\(Total:\s*(\$[\d,.]+k?)\)/i,
     /There is a\s+(\$[\d,.]+k?)\s+open bounty/i,
+    /Backers\s*\(Total:\s*(\$[\d,.]+k?)\)/i,
     /IssueHunt-[^-]*?%24([\d,.]+k?)%20Funded/i
   ];
 
