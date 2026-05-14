@@ -22,6 +22,9 @@ bounty-radar --lang typescript --min 100
 # JSON output for scripting
 bounty-radar --json | jq '.[] | select(.amount | test("\\$[0-9]00"))'
 
+# Use an optional GitHub token for higher search rate limits
+GITHUB_TOKEN=ghp_your_token bounty-radar --min 50
+
 # Show all bounties
 bounty-radar
 ```
@@ -46,7 +49,7 @@ Found 11 bounties:
 - **Competition scoring**: Color-coded competition levels based on comment count
 - **Smart filtering**: Filter by language, minimum amount, and max competition
 - **JSON output**: Pipe to `jq` or other tools
-- **No API key required**: Uses GitHub's public search API
+- **No API key required**: Uses GitHub's public search API, with optional `GITHUB_TOKEN` support for higher rate limits
 
 ## How It Works
 
@@ -55,6 +58,7 @@ bounty-radar queries the GitHub Search API for issues and PRs with bounty-relate
 ## Limitations
 
 - GitHub API rate limit: ~10 requests/minute for unauthenticated users
+- Set `GITHUB_TOKEN` to use authenticated GitHub Search API requests
 - Some bounties don't include dollar amounts in labels/titles
 - Results limited to 50 per search query
 
