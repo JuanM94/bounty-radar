@@ -32,7 +32,7 @@ function githubSearch(query: string): Promise<any> {
   });
 }
 
-function extractAmount(labels: string[], title: string): string {
+function extractAmount(labels: string[], title: string, body = ''): string {
   // Check labels for dollar amounts
   for (const label of labels) {
     const match = label.match(/\$[\d,.]+k?/i);
@@ -41,6 +41,11 @@ function extractAmount(labels: string[], title: string): string {
   // Check title
   const titleMatch = title.match(/\$[\d,.]+k?/i);
   if (titleMatch) return titleMatch[0];
+
+  // Check common funding badge/body text such as IssueHunt summaries.
+  const bodyMatch = body.match(/\$[\d,.]+k?/i);
+  if (bodyMatch) return bodyMatch[0];
+
   return 'Unknown';
 }
 
@@ -54,7 +59,7 @@ function parseIssue(item: any, platform: string): Bounty {
     repo,
     issue: item.number,
     title: item.title,
-    amount: extractAmount(labels, item.title),
+    amount: extractAmount(labels, item.title, item.body),
     labels,
     url: item.html_url,
     comments: item.comments || 0,
@@ -119,17 +124,54 @@ export async function searchLabelBounties(options: { language?: string; minAmoun
   });
 }
 
+export async function searchIssueHuntBounties(options: { language?: string; minAmount?: number }): Promise<Bounty[]> {
+  const langFilter = options.language ? `+language:${options.language}` : '';
+  const queries = [
+    `label:":dollar: Funded on Issuehunt" state:open is:issue${langFilter}`,
+    `"IssueHunt" in:body state:open is:issue${langFilter}`,
+    `"issuehunt.io" in:body state:open is:issue${langFilter}`
+  ];
+
+  const allBounties: Bounty[] = [];
+  const seen = new Set<string>();
+
+  for (const query of queries) {
+    try {
+      const data = await githubSearch(query);
+      if (!data.items) continue;
+
+      for (const item of data.items) {
+        const key = `${item.repository_url}#${item.number}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const bounty = parseIssue(item, 'issuehunt');
+        const amount = parseAmount(bounty.amount);
+        if (amount <= 0) continue;
+        if (options.minAmount && amount < options.minAmount) continue;
+
+        allBounties.push(bounty);
+      }
+    } catch {
+      // Rate limited or error, skip
+    }
+  }
+
+  return allBounties;
+}
+
 export async function searchAll(options: { language?: string; minAmount?: number; maxComments?: number }): Promise<Bounty[]> {
-  const [algora, labels] = await Promise.all([
+  const [algora, labels, issuehunt] = await Promise.all([
     searchAlgoraBounties(options),
-    searchLabelBounties(options)
+    searchLabelBounties(options),
+    searchIssueHuntBounties(options)
   ]);
   
   // Deduplicate
   const seen = new Set<string>();
   const all: Bounty[] = [];
   
-  for (const b of [...algora, ...labels]) {
+  for (const b of [...algora, ...labels, ...issuehunt]) {
     const key = `${b.repo}#${b.issue}`;
     if (seen.has(key)) continue;
     seen.add(key);

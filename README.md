@@ -1,6 +1,6 @@
 # 🔍 bounty-radar
 
-Find paid open-source bounties on GitHub. Aggregates bounties from Algora, GitHub labels, and issue titles.
+Find paid open-source bounties on GitHub. Aggregates bounties from Algora, IssueHunt, GitHub labels, and issue titles.
 
 Stop scrolling through GitHub manually — let bounty-radar find the money.
 
@@ -42,7 +42,7 @@ Found 11 bounties:
 
 ## Features
 
-- **Multi-source**: Searches Algora bounties (💎 Bounty label), GitHub bounty labels, and bounty keywords in issue titles
+- **Multi-source**: Searches Algora bounties (💎 Bounty label), IssueHunt-funded issues, GitHub bounty labels, and bounty keywords in issue titles
 - **Competition scoring**: Color-coded competition levels based on comment count
 - **Smart filtering**: Filter by language, minimum amount, and max competition
 - **JSON output**: Pipe to `jq` or other tools
@@ -50,7 +50,7 @@ Found 11 bounties:
 
 ## How It Works
 
-bounty-radar queries the GitHub Search API for issues and PRs with bounty-related labels and keywords, deduplicates results, extracts dollar amounts, and sorts by value.
+bounty-radar queries the GitHub Search API for issues and PRs with bounty-related labels, IssueHunt funding badges/body text, and bounty keywords, deduplicates results, extracts dollar amounts, and sorts by value.
 
 ## Limitations
 
