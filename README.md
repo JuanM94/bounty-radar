@@ -1,6 +1,6 @@
 # 🔍 bounty-radar
 
-Find paid open-source bounties on GitHub. Aggregates bounties from Algora, GitHub labels, and issue titles.
+Find paid open-source bounties on GitHub. Aggregates bounties from Algora, IssueHunt, GitHub labels, and issue titles.
 
 Stop scrolling through GitHub manually — let bounty-radar find the money.
 
@@ -22,6 +22,9 @@ bounty-radar --lang typescript --min 100
 # JSON output for scripting
 bounty-radar --json | jq '.[] | select(.amount | test("\\$[0-9]00"))'
 
+# Use an optional GitHub token for higher search rate limits
+GITHUB_TOKEN=your_token bounty-radar --min 50
+
 # Show all bounties
 bounty-radar
 ```
@@ -42,19 +45,20 @@ Found 11 bounties:
 
 ## Features
 
-- **Multi-source**: Searches Algora bounties (💎 Bounty label), GitHub bounty labels, and bounty keywords in issue titles
+- **Multi-source**: Searches Algora bounties (💎 Bounty label), IssueHunt-funded issues, GitHub bounty labels, and bounty keywords in issue titles
 - **Competition scoring**: Color-coded competition levels based on comment count
 - **Smart filtering**: Filter by language, minimum amount, and max competition
 - **JSON output**: Pipe to `jq` or other tools
-- **No API key required**: Uses GitHub's public search API
+- **No API key required**: Uses GitHub's public search API, with optional `GITHUB_TOKEN` support for higher rate limits
 
 ## How It Works
 
-bounty-radar queries the GitHub Search API for issues and PRs with bounty-related labels and keywords, deduplicates results, extracts dollar amounts, and sorts by value.
+bounty-radar queries the GitHub Search API for issues and PRs with bounty-related labels, IssueHunt funding badges/body text, and bounty keywords, deduplicates results, extracts dollar amounts, and sorts by value.
 
 ## Limitations
 
 - GitHub API rate limit: ~10 requests/minute for unauthenticated users
+- Set `GITHUB_TOKEN` to use authenticated GitHub Search API requests
 - Some bounties don't include dollar amounts in labels/titles
 - Results limited to 50 per search query
 
