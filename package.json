@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "npm run build && node --test test/*.test.js",
     "start": "node dist/cli.js"
   },
   "keywords": ["bounty", "github", "open-source", "money", "algora", "gitcoin", "cli"],
