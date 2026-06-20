@@ -74,8 +74,8 @@ export async function searchAlgoraBounties(options: { language?: string; minAmou
     .map((item: any) => parseIssue(item, 'algora'))
     .filter((b: Bounty) => {
       if (options.minAmount) {
-        const amt = parseInt(b.amount.replace(/[$,k]/g, ''));
-        if (b.amount.includes('k')) return amt * 1000 >= options.minAmount;
+        const amt = parseInt(b.amount.toLowerCase().replace(/[$,k]/g, ''));
+        if (b.amount.toLowerCase().includes('k')) return amt * 1000 >= options.minAmount;
         return amt >= options.minAmount;
       }
       return true;
@@ -110,9 +110,9 @@ export async function searchLabelBounties(options: { language?: string; minAmoun
   
   return allBounties.filter((b: Bounty) => {
     if (options.minAmount) {
-      const amt = parseInt(b.amount.replace(/[$,k]/g, ''));
+      const amt = parseInt(b.amount.toLowerCase().replace(/[$,k]/g, ''));
       if (isNaN(amt)) return false;
-      if (b.amount.includes('k')) return amt * 1000 >= options.minAmount;
+      if (b.amount.toLowerCase().includes('k')) return amt * 1000 >= options.minAmount;
       return amt >= options.minAmount;
     }
     return true;
@@ -146,7 +146,7 @@ export async function searchAll(options: { language?: string; minAmount?: number
 }
 
 function parseAmount(amount: string): number {
-  const cleaned = amount.replace(/[$,]/g, '');
+  const cleaned = amount.replace(/[$,]/g, '').toLowerCase();
   if (cleaned.endsWith('k')) return parseFloat(cleaned) * 1000;
   const num = parseFloat(cleaned);
   return isNaN(num) ? 0 : num;
